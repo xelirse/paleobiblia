@@ -48,23 +48,22 @@ El código final ha sido revisado y probado manualmente, pero conserva la huella
 
 ```
 .
-├── paleohebreo.html          # Documento principal
-├── styles.css                # Hoja de estilos única
-└── js/
-    ├── state.js              # Estado global + constantes + RAW_VERSES
-    ├── draw.js               # 22 funciones de dibujo + alphabetData + LETTERS
-    ├── utils.js              # Codificación base22, frecuencias, escape HTML
-    ├── ui.js                 # Toast + Modal
-    ├── regex.js              # Expresiones regulares: CRUD, pestañas, RTL, render
-    ├── frequency-tables.js   # Tablas de frecuencias de caracteres y palabras
-    ├── alphabet.js           # Persistencia, selector, constructor, copia
-    ├── random-alphabet.js    # Generación aleatoria de abecedarios
-    ├── verses.js             # Canvas de versículos + grid del alfabeto
-    ├── events.js             # Checkboxes, refresco global, setupEvents()
-    └── main.js               # programa(): punto de entrada
+├── paleohebreo.html       # Documento principal
+├── styles.css             # Hoja de estilos única
+├── state.js               # Estado global + constantes + RAW_VERSES
+├── draw.js                # 22 funciones de dibujo + alphabetData + LETTERS
+├── utils.js               # Codificación base22, frecuencias, escape HTML
+├── ui.js                  # Toast + Modal
+├── regex.js               # Expresiones regulares: CRUD, pestañas, RTL, render
+├── frequency-tables.js    # Tablas de frecuencias de caracteres y palabras
+├── alphabet.js            # Persistencia, selector, constructor, copia
+├── random-alphabet.js     # Generación aleatoria de abecedarios
+├── verses.js              # Canvas de versículos + grid del alfabeto
+├── events.js              # Checkboxes, refresco global, setupEvents()
+└── main.js                # programa(): punto de entrada
 ```
 
-Los scripts se cargan con `defer` en el orden indicado; `main.js` es siempre el último porque ejecuta `programa()`.
+Todos los archivos viven en la **raíz del proyecto**, sin subcarpetas. Los scripts se cargan con `defer` en el orden indicado; `main.js` es siempre el último porque ejecuta `programa()`.
 
 ---
 
