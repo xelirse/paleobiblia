@@ -1,0 +1,891 @@
+/* ==================================================================
+   GÉNESIS 1 EN PALEOHEBREO — HOJA DE ESTILOS
+   ==================================================================
+   Secciones:
+     1.  Reset y base
+     2.  Controles superiores
+     3.  Spoilers (<details> / <summary>)
+     4.  Grid del alfabeto
+     5.  Constructor de abecedario
+     6.  String del abecedario + botón copiar
+     7.  Versículos (canvas + índices)
+     8.  Tablas de frecuencias
+     9.  Layout de frecuencias de palabras + panel de regex
+     10. Pestañas del panel de expresiones      ← NUEVO
+     11. Toast
+     12. Modal
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   1. RESET Y BASE
+   ------------------------------------------------------------------ */
+* { box-sizing: border-box; }
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 28px 16px 70px;
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin: 0 0 20px;
+    font-size: 1.85rem;
+    letter-spacing: .02em;
+}
+
+/* ------------------------------------------------------------------
+   2. CONTROLES SUPERIORES
+   ------------------------------------------------------------------ */
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+.controls button {
+    background: #2c3e50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.1s;
+}
+.controls button:hover { background: #1a252f; }
+.controls button:active { transform: scale(0.98); }
+.controls button.secondary { background: #7a869a; }
+.controls button.secondary:hover { background: #5c6a7c; }
+
+.direction-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+.direction-toggle input {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+.direction-toggle select {
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    background: #fff;
+    cursor: pointer;
+    max-width: 220px;
+}
+.alphabet-btn {
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    background: #f4f4f9;
+    color: #2c3e50;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 3px 8px;
+    font-weight: 700;
+    line-height: 1.2;
+    transition: background 0.15s, color 0.15s;
+}
+.alphabet-btn:hover:not(:disabled) {
+    background: #2c3e50;
+    color: #fff;
+}
+.alphabet-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------
+   3. SPOILERS (<details> / <summary>)
+   ------------------------------------------------------------------ */
+details {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    margin: 0 auto 24px;
+    max-width: 1120px;
+    overflow: hidden;
+    border-left: 6px solid #2c3e50;
+}
+summary {
+    cursor: pointer;
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    transition: background 0.2s;
+}
+summary:hover { background: #f8f9fa; }
+summary::after {
+    content: '▼';
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+    color: #7a869a;
+}
+details[open] summary::after { transform: rotate(180deg); }
+details[open] summary { border-bottom: 1px solid #eee; }
+
+.content-box { padding: 0; background: #faf8f5; }
+
+/* ------------------------------------------------------------------
+   4. GRID DEL ALFABETO
+   ------------------------------------------------------------------ */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-top: 4px solid #2c3e50;
+}
+canvas { display: block; background: #faf8f5; border-radius: 8px; margin-bottom: 15px; }
+.modern { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+.name { font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 10px; }
+.details { font-size: 0.9rem; color: #666; line-height: 1.4; }
+.details strong { color: #333; }
+
+/* ------------------------------------------------------------------
+   5. CONSTRUCTOR DE ABECEDARIO
+   ------------------------------------------------------------------ */
+.builder-help {
+    padding: 15px 20px 0;
+    margin: 0;
+    font-size: 0.85rem;
+    color: #7a869a;
+    text-align: center;
+    line-height: 1.5;
+}
+.legend {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.legend-cyan    { background: #b2f5f5; color: #006064; }
+.legend-magenta { background: #f5b2f5; color: #880e4f; }
+
+.alphabet-builder {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+    justify-content: center;
+}
+.alpha-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 2px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 8px 6px;
+    cursor: grab;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    min-width: 58px;
+}
+.alpha-slot:hover {
+    border-color: #7a869a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.alpha-slot.dragging {
+    opacity: 0.35;
+    cursor: grabbing;
+}
+.alpha-slot.drag-over {
+    border-color: #2c3e50;
+    background: #f0f4f8;
+    transform: scale(1.05);
+}
+.alpha-slot.alpha-cyan {
+    background: #b2f5f5;
+    border-color: #00acc1;
+}
+.alpha-slot.alpha-cyan:hover {
+    border-color: #00838f;
+}
+.alpha-slot.alpha-magenta {
+    background: #f5b2f5;
+    border-color: #c2185b;
+}
+.alpha-slot.alpha-magenta:hover {
+    border-color: #880e4f;
+}
+.alpha-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.4;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    pointer-events: none;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.alpha-count.alpha-count-zero {
+    background: #27ae60;
+}
+.alpha-original {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #7a869a;
+    line-height: 1;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.alpha-latin {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7a869a;
+    line-height: 1;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    letter-spacing: 0.05em;
+}
+.alpha-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #7a869a;
+}
+.alpha-slot input {
+    width: 38px;
+    height: 38px;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    color: #2c3e50;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    text-transform: uppercase;
+    padding: 0;
+    background: #faf8f5;
+}
+.alpha-slot input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    background: #fff;
+}
+.alpha-slot-buttons {
+    display: flex;
+    gap: 3px;
+}
+.alpha-slot button {
+    background: #eef0f3;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    color: #2c3e50;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+}
+.alpha-slot button:hover:not(:disabled) {
+    background: #2c3e50;
+    color: #fff;
+}
+.alpha-slot button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------
+   6. STRING DEL ABECEDARIO + BOTÓN COPIAR
+   ------------------------------------------------------------------ */
+.alphabet-string-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 20px 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.alphabet-string {
+    flex: 1;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    letter-spacing: 0.08em;
+    word-break: break-all;
+    user-select: all;
+}
+.alphabet-copy-btn {
+    background: #2c3e50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: background 0.15s, transform 0.1s;
+    flex: 0 0 auto;
+}
+.alphabet-copy-btn:hover { background: #1a252f; }
+.alphabet-copy-btn:active { transform: scale(0.96); }
+.alphabet-copy-btn.copied { background: #27ae60; }
+
+/* ------------------------------------------------------------------
+   7. VERSÍCULOS (CANVAS + ÍNDICES)
+   ------------------------------------------------------------------ */
+.verse-canvas-container { display: flex; justify-content: center; }
+canvas.verse-canvas { width: 100%; height: auto; border: none; margin-bottom: 0; }
+
+.indices-wrapper { padding: 0 20px 20px; }
+.indices-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #7a869a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+.verse-indices {
+    display: block;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.7;
+    direction: ltr;
+    text-align: left;
+}
+.verse-indices.rtl {
+    text-align: right;
+}
+
+.indices-blocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+.indices-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.indices-sublabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #7a869a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* ------------------------------------------------------------------
+   8. TABLAS DE FRECUENCIAS
+   ------------------------------------------------------------------ */
+.frequency-wrapper {
+    padding: 20px;
+    overflow-x: auto;
+}
+.frequency-table {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.frequency-table th,
+.frequency-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.frequency-table th {
+    background: #2c3e50;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.frequency-table td:first-child {
+    font-weight: 700;
+    color: #2c3e50;
+    width: 50%;
+}
+.frequency-table td:last-child {
+    color: #7a869a;
+}
+.frequency-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.frequency-table tbody tr:hover td {
+    background: #f8f9fa;
+}
+.frequency-table.filtered-table th {
+    background: #c0392b;
+}
+
+.av-cell {
+    color: #7a869a;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+/* Letras A-V resaltadas en la tabla de palabras */
+.av-letter {
+    display: inline-block;
+    min-width: 18px;
+    text-align: center;
+    padding: 1px 4px;
+    margin: 0 1px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+.av-letter-cyan {
+    background: #b2f5f5;
+    border-color: #00acc1;
+    color: #006064;
+}
+.av-letter-magenta {
+    background: #f5b2f5;
+    border-color: #c2185b;
+    color: #880e4f;
+}
+.av-letter-color-0 { background: #f5b2f5; border-color: #c2185b; color: #880e4f; } /* magenta */
+.av-letter-color-1 { background: #ffd9a8; border-color: #e67e22; color: #7a4b00; } /* naranja */
+.av-letter-color-2 { background: #b2f5c4; border-color: #27ae60; color: #0b5c2b; } /* verde */
+.av-letter-color-3 { background: #d5b2f5; border-color: #8e44ad; color: #4a1b6e; } /* púrpura */
+.av-letter-color-4 { background: #f5f0b2; border-color: #d4ac0d; color: #6b5400; } /* amarillo */
+.av-letter-color-5 { background: #f5b2b2; border-color: #c0392b; color: #7a1a12; } /* rojo */
+.av-letter-color-6 { background: #b2c4f5; border-color: #2c3e50; color: #1a2633; } /* azul */
+.av-letter-color-7 { background: #e0c2a8; border-color: #8b5a2b; color: #4d2e10; } /* marrón */
+
+/* Resaltado de caracteres en la tabla de frecuencias de caracteres */
+.av-highlight {
+    display: inline-block;
+    min-width: 22px;
+    text-align: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    font-weight: 700;
+}
+.av-highlight.av-cyan {
+    background: #b2f5f5;
+    border-color: #00acc1;
+    color: #006064;
+}
+.av-highlight.av-magenta {
+    background: #f5b2f5;
+    border-color: #c2185b;
+    color: #880e4f;
+}
+
+/* ------------------------------------------------------------------
+   9. LAYOUT DE FRECUENCIAS DE PALABRAS + PANEL DE REGEX
+   ------------------------------------------------------------------ */
+.word-freq-layout {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+.word-table-container {
+    flex: 1 1 380px;
+    min-width: 0;
+}
+.word-table-container .frequency-table {
+    max-width: 100%;
+    margin: 0;
+}
+
+.table-caption {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+.table-caption-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7a869a;
+}
+.table-caption-count {
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.regex-panel {
+    flex: 0 0 280px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 14px;
+}
+.regex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7a869a;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+.regex-total {
+    background: #2c3e50;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.regex-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.regex-sort-btn {
+    background: #eef0f3;
+    border: none;
+    border-radius: 3px;
+    color: #2c3e50;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 3px 6px;
+    font-weight: 700;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.regex-sort-btn:hover {
+    background: #2c3e50;
+    color: #fff;
+}
+.regex-sort-btn.active {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.regex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    max-height: 380px;
+    overflow-y: auto;
+}
+.regex-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #faf8f5;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    cursor: grab;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.regex-item:active {
+    cursor: grabbing;
+}
+.regex-item.dragging {
+    opacity: 0.4;
+}
+.regex-item.drag-over {
+    background: #e2e8f0;
+    border-color: #2c3e50;
+    transform: scale(1.02);
+}
+.regex-pattern {
+    flex: 1;
+    color: #2c3e50;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: text;
+    cursor: text;
+}
+.regex-count {
+    color: #c0392b;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: right;
+    font-size: 0.8rem;
+}
+.regex-remove,
+.regex-edit,
+.regex-done,
+.regex-copy {
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.regex-remove { font-size: 1.1rem; }
+.regex-edit,
+.regex-done,
+.regex-copy { font-size: 0.95rem; }
+.regex-edit:hover,
+.regex-done:hover,
+.regex-copy:hover { color: #2c3e50; }
+.regex-remove:hover { color: #c0392b; }
+
+.regex-input {
+    flex: 1;
+    border: 1px solid #2c3e50;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    min-width: 0;
+    outline: none;
+    background: #fff;
+}
+
+.regex-add {
+    display: flex;
+    gap: 6px;
+}
+.regex-add input {
+    flex: 1;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    min-width: 0;
+    color: #2c3e50;
+}
+.regex-add input:focus { outline: none; border-color: #2c3e50; }
+.regex-add button {
+    background: #2c3e50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+.regex-add button:hover { background: #1a252f; }
+
+.match-red   { color: #c0392b; font-weight: 700; }
+.match-green { color: #27ae60; }
+
+/* ------------------------------------------------------------------
+   10. PESTAÑAS DEL PANEL DE EXPRESIONES (NUEVO)
+   ------------------------------------------------------------------
+   - .regex-tabs: contenedor flex de las cuatro pestañas.
+   - .regex-tab:  botón de pestaña inactiva.
+   - .regex-tab.active: pestaña seleccionada (fondo oscuro).
+   - .regex-sort-btn.active: ya definido arriba (compartido por ⇄).
+   ------------------------------------------------------------------ */
+.regex-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+.regex-tab {
+    flex: 1;
+    background: #f4f4f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    color: #7a869a;
+    cursor: pointer;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 6px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.regex-tab:hover {
+    background: #eef0f3;
+    color: #2c3e50;
+}
+.regex-tab.active {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #2c3e50;
+}
+
+/* ------------------------------------------------------------------
+   11. TOAST
+   ------------------------------------------------------------------ */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2c3e50;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
+    max-width: 90vw;
+    text-align: center;
+    pointer-events: none;
+}
+.toast-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast-success { background: #27ae60; }
+.toast-warning { background: #e67e22; }
+.toast-error   { background: #c0392b; }
+.toast-info    { background: #2c3e50; }
+
+/* ------------------------------------------------------------------
+   12. MODAL
+   ------------------------------------------------------------------ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    font-family: inherit;
+}
+.modal-title {
+    margin: 0 0 10px;
+    font-size: 1.15rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
+.modal-message {
+    margin: 0 0 14px;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+.modal-input {
+    width: 100%;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 14px;
+    font-family: inherit;
+}
+.modal-input:focus {
+    outline: none;
+    border-color: #2c3e50;
+}
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.modal-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.modal-btn-cancel {
+    background: #eef0f3;
+    color: #2c3e50;
+}
+.modal-btn-cancel:hover { background: #dde1e5; }
+.modal-btn-confirm {
+    background: #2c3e50;
+    color: #fff;
+}
+.modal-btn-confirm:hover { background: #1a252f; }

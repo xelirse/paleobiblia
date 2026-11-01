@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Génesis 1 en Paleohebreo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Génesis 1 en Paleohebreo</h1>
+
+    <div class="controls">
+        <button id="toggle-alphabet">Expandir Abecedario</button>
+        <button id="toggle-verses" class="secondary">Expandir todos los Versículos</button>
+        <label class="direction-toggle">
+            <input type="checkbox" id="toggle-direction">
+            Lectura hebrea (derecha → izquierda)
+        </label>
+        <label class="direction-toggle">
+            <input type="checkbox" id="toggle-labels">
+            Usar letras
+        </label>
+        <label class="direction-toggle">
+            Abecedario:
+            <select id="alphabet-select"></select>
+            <button id="btn-add-alphabet" class="alphabet-btn" title="Guardar el abecedario actual como uno nuevo">＋</button>
+            <button id="btn-del-alphabet" class="alphabet-btn" title="Eliminar el abecedario guardado actual">🗑</button>
+            <button id="btn-random-alphabet" class="alphabet-btn" title="Generar abecedario aleatorio sin coincidencias">🎲</button>
+        </label>
+    </div>
+
+    <details id="alphabet-details">
+        <summary>Alfabeto Paleohebreo</summary>
+        <div class="content-box">
+            <div class="grid" id="alphabet-grid"></div>
+        </div>
+    </details>
+
+    <details id="custom-alphabet-details">
+        <summary>Constructor de abecedario personalizado</summary>
+        <div class="content-box">
+            <p class="builder-help">
+                Arrastra una letra para reordenarla, escríbela en el campo de texto, o usa las flechas ◀ ▶ para moverla.
+                Los cambios se aplican automáticamente a los versículos y a las tablas de frecuencias.
+                Las casillas <span class="legend legend-cyan">cian</span> tienen letras que no se repiten y las
+                <span class="legend legend-magenta">magenta</span> letras repetidas.
+            </p>
+            <div class="alphabet-builder" id="alphabet-builder"></div>
+
+            <div class="alphabet-string-wrapper">
+                <code class="alphabet-string" id="alphabet-string"></code>
+                <button id="btn-copy-alphabet" class="alphabet-copy-btn" title="Copiar abecedario">📋</button>
+            </div>
+        </div>
+    </details>
+
+    <details id="frequency-details">
+        <summary>Tabla de frecuencias de caracteres</summary>
+        <div class="content-box">
+            <div class="frequency-wrapper">
+                <table class="frequency-table" id="frequency-table"></table>
+            </div>
+        </div>
+    </details>
+
+    <details id="word-frequency-details">
+        <summary>Tabla de frecuencias de palabras</summary>
+        <div class="content-box">
+            <label class="direction-toggle" style="margin: 20px auto 0; width: fit-content; display: flex;">
+                <input type="checkbox" id="toggle-sort-length">
+                Ordenar por longitud (y luego por frecuencia)
+            </label>
+            <div class="word-freq-layout">
+                <div class="regex-panel">
+                    <div class="regex-header">
+                        <span>Expresiones regulares</span>
+                        <div class="regex-actions">
+                            <button id="btn-sort-regex-alpha" class="regex-sort-btn" title="Ordenar alfabéticamente (pestaña actual)">A↓</button>
+                            <button id="btn-sort-regex-freq"  class="regex-sort-btn" title="Ordenar por coincidencias (pestaña actual)">↓#</button>
+                            <button id="btn-sort-regex-rtl"   class="regex-sort-btn" title="Orden de derecha a izquierda" style="display:none;">⇄</button>
+                            <span class="regex-total" id="regex-total">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="regex-tabs" id="regex-tabs">
+                        <button class="regex-tab active" data-tab="none"  title="Sin ^ ni $">—</button>
+                        <button class="regex-tab"        data-tab="start" title="^ al inicio, sin $">^—</button>
+                        <button class="regex-tab"        data-tab="end"   title="Sin ^, $ al final">—$</button>
+                        <button class="regex-tab"        data-tab="both"  title="^ al inicio y $ al final">^—$</button>
+                    </div>
+                    <div class="regex-list" id="regex-list"></div>
+                    <div class="regex-add">
+                        <input type="text" id="regex-input" placeholder="Nueva expresión…">
+                        <button id="regex-add-btn">+</button>
+                    </div>
+                </div>
+                <div class="word-table-container">
+                    <div class="table-caption" id="filtered-caption">
+                        <span class="table-caption-title">Palabras coincidentes</span>
+                        <span class="table-caption-count" id="filtered-count">0</span>
+                    </div>
+                    <table class="frequency-table filtered-table" id="filtered-word-frequency-table"></table>
+                    <div class="table-caption" style="margin-top: 24px;">
+                        <span class="table-caption-title">Todas las palabras</span>
+                    </div>
+                    <table class="frequency-table" id="word-frequency-table"></table>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <div id="verses-container"></div>
+
+    <!-- Archivos JavaScript separados (orden de carga: dependencias primero, main.js al final) -->
+    <script src="state.js" defer></script>
+    <script src="draw.js" defer></script>
+    <script src="utils.js" defer></script>
+    <script src="ui.js" defer></script>
+    <script src="regex.js" defer></script>
+    <script src="frequency-tables.js" defer></script>
+    <script src="alphabet.js" defer></script>
+    <script src="random-alphabet.js" defer></script>
+    <script src="verses.js" defer></script>
+    <script src="events.js" defer></script>
+    <script src="main.js" defer></script>
+</body>
+</html>
